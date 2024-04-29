@@ -1,0 +1,21 @@
+# Ignorar archivos y directorios generados automáticamente
+*.pyc
+__pycache__
+db.sqlite3
+
+# Ignorar archivos y directorios generados por el entorno virtual
+.env
+.venv/
+.envrc
+
+# Ignorar archivos de logs
+*.log
+
+# Ignorar archivos y directorios generados por IDEs y editores de texto
+.vscode/
+.idea/
+*.sublime-*
+*.swp
+
+#ignorar directorio de imagenes
+media/
