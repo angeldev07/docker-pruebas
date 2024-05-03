@@ -2,7 +2,8 @@ from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .models import Img
+from .models import Img, Items
+from .serializers import ItemSerializer
 import tabula
 
 
@@ -37,3 +38,28 @@ def file_list(resquest):
         ],
         status=200,
     )
+
+@api_view(["GET"])
+def listar_items(request):
+    items = ItemSerializer(Items.objects.all(), many=True)
+
+    return Response(
+        items.data,
+        status=200,
+    )
+
+@api_view(["POST"])
+def crear_item(request):
+    item = ItemSerializer(data=request.data)
+    if item.is_valid():
+        item.save()
+        return Response(item.data, status=201)
+    return Response(item.errors, status=400)
+
+# Generame un json con los datos de un item de ejemplo acorde al modelo
+item = {
+    "name": "Item 1",
+    "price": 100,
+    "quantity": 2,
+    "total": 200,
+}

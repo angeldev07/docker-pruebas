@@ -1,41 +1,127 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { JsonPipe } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
-import {  ItemService } from './components/list/items.service';
+import { HttpClient } from '@angular/common/http';
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 
+interface Item {
+  id: number,
+  name: string
+  price: number,
+  quantity:  number,
+  total: number,
+  created_at:  string,
+}
+
+interface state {
+  loading: boolean,
+  data: Item[],
+  error: boolean
+}
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [  RouterOutlet, JsonPipe],
+  imports: [  RouterOutlet, JsonPipe, ReactiveFormsModule],
   template: `
-    <h1>Welcome to {{title}}!</h1>
 
-    <input type="file" (change)="change($event)">
+    <h1>Lista de items</h1>
 
-    <div>File : {{ file?.name}}</div>
-
+    <!-- formulario -->
     <div>
-      <button (click)="send()">Enviar</button>
+      <form [formGroup]="itemForm" (ngSubmit)="submit()" >
+        <div>
+          <label for="">nombre</label>
+          <input type="text" placeholder="Nombre del item" formControlName="name" />
+        </div>
+        <div>
+          <label for="">precio</label>
+          <input type="number" placeholder="Precio" formControlName="price" />
+        </div>
+        <div>
+          <label for="">cantidad</label>
+          <input type="number" placeholder="Cantidad" formControlName="quantity" />
+        </div>
+        <button type="submit">Agregar</button>
+      </form>
+
     </div>
 
-    <router-outlet></router-outlet>
+    @if (items().loading) {
+      <p>Cargando...</p>
+    } @else if (items().error) {
+      <p>Error al cargar los items</p>
+    } @else {
+      <ul>
+        @for (item of items().data; track $index) {
+          <li>{{ item.name }} - $ {{ item.price }}</li>
+        }
+      </ul>
+    }
   `,
   styles: [],
 })
 export class AppComponent {
-  title = 'Documentos app in Angular 17';
 
-  file:File | null | undefined;
-  constructor(
-    private itemsService: ItemService
-  ) { }
+  http = inject(HttpClient);
+  fb = inject(FormBuilder)
 
-  change(event: any){
-    this.file = event.target.files[0]
+  itemForm = this.fb.group({
+    name: '',
+    price: 0,
+    quantity: 0
+  })
+
+  items = signal<state>({
+    loading: true,
+    data: [],
+    error: false
+  })
+
+  ngOnInit(): void {
+    //Called after the constructor, initializing input properties, and the first call to ngOnChanges.
+    //Add 'implements OnInit' to the class.
+    this.http.get<Item[]>('http://localhost:8000/items/listar-items').subscribe({
+      next: (data) => {
+        this.items.set({
+          loading: false,
+          data: data,
+          error: false
+        })
+      },
+      error: (error) => {
+        this.items.set({
+          loading: false,
+          data: [],
+          error: true
+        })
+      }
+    })
   }
+  
+  submit(){ 
 
-  send(){
-    console.log(this.file)
+    const data = this.itemForm.value
+
+    const formData = {
+      name: data.name,
+      price: data.price,
+      quantity: data.quantity,
+      total: data.price! * data.quantity!,
+      id: -1
+    }
+
+    this.http.post<Item>('http://localhost:8000/items/crear-items', formData).subscribe({
+      next: (data: Item) => {
+        this.items.update(state => ({...state, data: [...state.data, data]}))
+      },
+      error: (error) => {
+        this.items.set({
+          loading: false,
+          data: [],
+          error: true
+        })
+      }
+    })
   }
 
 }

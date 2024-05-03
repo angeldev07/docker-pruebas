@@ -1,8 +1,8 @@
 
 from django.urls import path
-from .views import file, file_list
+from .views import listar_items, crear_item
 
 urlpatterns = [
-    path('', file, name='file'),
-    path('list', file_list, name='file_list')
+    path('listar-items', listar_items, name='listar items'),
+    path('crear-items', crear_item, name='crear items'),
 ]

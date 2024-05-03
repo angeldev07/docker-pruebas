@@ -24,18 +24,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-zp@))4gy$c4&v4o-k-7&t*+s!v$52j6ej5-$%4yy)p9-3p1xyp'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    'simple-app'
 ]
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:8000',
     'http://localhost:4200',
-    'http://simple-app'
+    'http://localhost'
 ]
 
 # Application definition
